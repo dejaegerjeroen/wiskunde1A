@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dossier 2 — Rekenprotocollen — Extra oefenkans</title>
+<style>
+  :root{
+    --bg:#f4f6fa; --card:#ffffff; --ink:#1e2432; --ink-soft:#5b6472;
+    --border:#d7dce4; --accent:#2563eb; --accent-dark:#1d4ed8;
+    --ok:#16a34a; --ok-bg:#dcfce7; --bad:#dc2626; --bad-bg:#fee2e2;
+    --zone-bg:#eff6ff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.5;
+  }
+  header{
+    background:linear-gradient(135deg, var(--accent-dark), var(--accent));
+    color:#fff; padding:1.5rem 1rem; text-align:center;
+  }
+  header h1{ margin:0 0 .3rem; font-size:1.5rem; }
+  header p{ margin:0; opacity:.9; font-size:.9rem; }
+  main{ max-width:940px; margin:0 auto; padding:1.5rem 1rem 3rem; }
+  .info-box{
+    background:#fff; border:2px solid var(--border); border-radius:.75rem;
+    padding:1rem; margin-bottom:1.5rem; font-size:.9rem; color:var(--ink-soft);
+  }
+  section.group{ margin-bottom:2.5rem; }
+  section.group > h2{
+    font-size:1.2rem; border-bottom:3px solid var(--accent); padding-bottom:.4rem; margin-bottom:1rem;
+  }
+  .card{
+    background:var(--card); border:2px solid var(--border); border-radius:.85rem;
+    padding:1.1rem 1.2rem; margin-bottom:1.3rem; box-shadow:0 2px 6px rgba(0,0,0,.04);
+  }
+  .card-head{ display:flex; align-items:center; justify-content:space-between; gap:.5rem; margin-bottom:.5rem; flex-wrap:wrap; }
+  .card-head h3{ margin:0; font-size:1.05rem; color:var(--accent-dark); }
+  .refresh-btn{
+    border:2px solid var(--border); background:#fff; border-radius:.6rem;
+    padding:.35rem .7rem; font-size:.78rem; font-weight:700; cursor:pointer; color:var(--ink);
+    white-space:nowrap;
+  }
+  .refresh-btn:hover{ border-color:var(--accent); color:var(--accent-dark); }
+  .instructions{ font-size:.88rem; color:var(--ink-soft); margin:.2rem 0 .8rem; }
+
+  /* --- chips (draggable words / items) --- */
+  .pool{
+    display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:1rem;
+    min-height:2.6rem; padding:.5rem; border:2px dashed var(--border); border-radius:.6rem;
+  }
+  .chip{
+    display:inline-block; padding:.4rem .7rem; border:2px solid var(--border); border-radius:.55rem;
+    background:#fff; font-weight:700; font-size:.85rem; cursor:grab; user-select:none; touch-action:none;
+    z-index:6;
+  }
+  .chip-selected{ box-shadow:0 0 0 3px var(--accent) inset; }
+  .chip-correct{ border-color:var(--ok); background:var(--ok-bg); }
+  .chip-wrong{ border-color:var(--bad); background:var(--bad-bg); }
+
+  /* --- begrippen: zinnen met invulvakjes --- */
+  .term-problem{ padding:.7rem 0; border-top:1px solid var(--border); }
+  .term-problem:first-child{ border-top:none; }
+  .term-expr{ font-weight:800; font-size:1.05rem; margin-bottom:.5rem; color:var(--accent-dark); }
+  .term-line{ font-size:.92rem; margin-bottom:.4rem; display:flex; align-items:center; flex-wrap:wrap; gap:.35rem; }
+  .blank-zone{
+    display:inline-flex; align-items:center; justify-content:center; min-width:6.5rem; min-height:2.1rem;
+    padding:.2rem .4rem; border:2px dashed var(--border); border-radius:.5rem; background:var(--zone-bg);
+    vertical-align:middle;
+  }
+  .blank-zone .chip{ margin:0; }
+  .term-feedback{ font-size:.8rem; font-weight:600; margin-top:.15rem; min-height:1.1rem; }
+  .term-feedback.ok{ color:var(--ok); }
+  .term-feedback.bad{ color:var(--bad); }
+
+  /* --- opgaand / niet-opgaand vraag bij tabellen --- */
+  .oq-row{ padding:.6rem 0; border-top:1px solid var(--border); font-size:.88rem; }
+  .oq-row:first-child{ border-top:none; }
+  .oq-label{ font-weight:600; margin-bottom:.4rem; }
+  .oq-buttons{ display:flex; gap:.5rem; margin-bottom:.35rem; }
+  .oq-btn{
+    border:2px solid var(--border); background:#fff; border-radius:.55rem;
+    padding:.4rem .7rem; font-size:.82rem; font-weight:700; cursor:pointer; color:var(--ink);
+  }
+  .oq-btn:hover{ border-color:var(--accent); }
+  .oq-btn.chosen{ border-color:var(--accent); background:#eff6ff; }
+  .oq-fb{ font-size:.82rem; font-weight:600; min-height:1.1rem; }
+  .oq-fb.ok{ color:var(--ok); }
+  .oq-fb.bad{ color:var(--bad); }
+
+  /* --- tabellen 2.4 --- */
+  table.dtable{ width:100%; border-collapse:collapse; margin-bottom:.4rem; font-size:.9rem; }
+  table.dtable caption{ text-align:left; font-size:.85rem; color:var(--ink-soft); margin-bottom:.4rem; }
+  table.dtable th, table.dtable td{ border:1px solid var(--border); padding:.5rem; text-align:center; }
+  table.dtable th{ background:#eef2f8; font-weight:700; }
+  table.dtable td.given{ background:#f8fafc; font-weight:700; }
+  table.dtable input{
+    width:4.2rem; padding:.3rem; border:2px solid var(--border); border-radius:.4rem;
+    font-size:.9rem; font-weight:700; text-align:center; color:var(--ink);
+  }
+  table.dtable input.correct{ border-color:var(--ok); background:var(--ok-bg); }
+  table.dtable input.wrong{ border-color:var(--bad); background:var(--bad-bg); }
+
+  /* --- woordproblemen met numeriek antwoord --- */
+  .word-problem{ padding:.7rem 0; border-top:1px solid var(--border); }
+  .word-problem:first-child{ border-top:none; }
+  .wp-text{ font-size:.92rem; margin-bottom:.5rem; }
+  .wp-row{ display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; }
+  .wp-input{
+    width:7rem; padding:.45rem .6rem; border:2px solid var(--border); border-radius:.55rem;
+    font-size:.95rem; font-weight:700; color:var(--ink);
+  }
+  .wp-input:focus{ outline:none; border-color:var(--accent); }
+  .wp-fb{ font-size:.85rem; font-weight:600; }
+  .wp-fb.ok{ color:var(--ok); }
+  .wp-fb.bad{ color:var(--bad); }
+
+  /* --- categorie-slepen 2.8 --- */
+  .cat-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:.7rem; margin-top:.8rem; }
+  .cat-zone{ border:2px dashed var(--border); border-radius:.6rem; padding:.6rem; min-height:6rem; background:var(--zone-bg); }
+  .cat-zone h4{ margin:0 0 .5rem; font-size:.85rem; color:var(--accent-dark); text-align:center; }
+  .cat-items{ display:flex; flex-wrap:wrap; gap:.35rem; min-height:2rem; }
+  .cat-items .chip{ font-size:.78rem; max-width:100%; white-space:normal; text-align:left; }
+
+  /* --- zelf bewerking + uitkomst noteren --- */
+  .open-input{
+    width:11rem; padding:.5rem .6rem; border:2px solid var(--border); border-radius:.55rem;
+    font-size:.95rem; font-weight:700; color:var(--ink); font-family:inherit;
+  }
+  .open-input:focus{ outline:none; border-color:var(--accent); }
+  .open-hint{ font-size:.78rem; color:var(--ink-soft); margin-top:.3rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🧮 Dossier 2 — Rekenprotocollen</h1>
+  <p>Extra oefenkans: vaktermen, delen met rest en de 4 bewerkingen — met directe feedback</p>
+</header>
+
+<main>
+  <div class="info-box">
+    ℹ️ Je voortgang per oefening wordt automatisch bewaard in je browser (localStorage). Wil je een oefening opnieuw
+    helemaal leeg beginnen? Klik dan op <strong>↺ Opnieuw beginnen</strong> bovenaan die oefening. Deze oefeningen
+    tellen niet mee voor punten: je krijgt feedback of je antwoord juist of fout is, en waarom.
+  </div>
+
+  <!-- ============ 1. BEGRIPPEN (2.1 - 2.3) ============ -->
+  <section class="group">
+    <h2>1. Ken je de vaktermen?</h2>
+
+    <div class="card" data-key="ex1">
+      <div class="card-head" style="justify-content:flex-end;"><button class="refresh-btn" data-target="ex1">↺ Opnieuw beginnen</button></div>
+      <p class="instructions">Sleep elk woord uit de woordenbank naar de juiste plaats (of tik een woord aan en tik
+        daarna op het juiste vakje).</p>
+      <div id="pool-ex1" class="pool"></div>
+      <div id="problems-ex1"></div>
+    </div>
+
+    <div class="card" data-key="ex2">
+      <div class="card-head" style="justify-content:flex-end;"><button class="refresh-btn" data-target="ex2">↺ Opnieuw beginnen</button></div>
+      <p class="instructions">Zelfde opdracht, andere berekeningen.</p>
+      <div id="pool-ex2" class="pool"></div>
+      <div id="problems-ex2"></div>
+    </div>
+
+    <div class="card" data-key="ex3">
+      <div class="card-head" style="justify-content:flex-end;"><button class="refresh-btn" data-target="ex3">↺ Opnieuw beginnen</button></div>
+      <p class="instructions">Nog een derde reeks berekeningen.</p>
+      <div id="pool-ex3" class="pool"></div>
+      <div id="problems-ex3"></div>
+    </div>
+  </section>
+
+  <!-- ============ 2. TABELLEN (2.4) ============ -->
+  <section class="group">
+    <h2>2. Vul de tabel aan</h2>
+    <div class="info-box" style="margin-bottom:1rem;">
+      💡 Gebruik de controleformule <strong>D = d · q + r</strong> (deeltal = deler × quotiënt + rest). De rest is
+      altijd kleiner dan de deler. Is de rest 0, dan spreken we van een <strong>opgaande deling</strong>. Is de rest
+      niet 0, dan spreken we van een <strong>niet-opgaande deling</strong>.
+    </div>
+
+    <div class="card" data-key="ex4">
+      <div class="card-head" style="justify-content:flex-end;"><button class="refresh-btn" data-target="ex4">↺ Opnieuw beginnen</button></div>
+      <div id="content-ex4"></div>
+    </div>
+    <div class="card" data-key="ex5">
+      <div class="card-head" style="justify-content:flex-end;"><button class="refresh-btn" data-target="ex5">↺ Opnieuw beginnen</button></div>
+      <div id="content-ex5"></div>
+    </div>
+    <div class="card" data-key="ex6">
+      <div class="card-head" style="justify-content:flex-end;"><button class="refresh-btn" data-target="ex6">↺ Opnieuw beginnen</button></div>
+      <div id="content-ex6"></div>
+    </div>
+  </section>
+
+  <!-- ============ 3. VRAAGSTUKJES (2.5 - 2.6) ============ -->
+  <section class="group">
+    <h2>3. Los de vraagstukjes op</h2>
+    <div class="card" data-key="ex7">
+      <div class="card-head" style="justify-content:flex-end;"><button class="refresh-btn" data-target="ex7">↺ Opnieuw beginnen</button></div>
+      <p class="instructions">Vul telkens enkel het antwoord (het getal) in. Je krijgt meteen feedback met de volledige
+        bewerking.</p>
+      <div id="content-ex7"></div>
+    </div>
+  </section>
+
+  <!-- ============ 4. SLEEP NAAR BEWERKING (2.8) ============ -->
+  <section class="group">
+    <h2>4. Sleep de situatie naar de juiste bewerking</h2>
+    <div class="card" data-key="ex8">
+      <div class="card-head" style="justify-content:flex-end;"><button class="refresh-btn" data-target="ex8">↺ Opnieuw beginnen</button></div>
+      <p class="instructions">Sleep elke situatie naar de bewerking die je nodig hebt om ze op te lossen (of tik een
+        situatie aan en tik daarna op het juiste vak).</p>
+      <div id="pool-ex8" class="pool"></div>
+      <div id="cats-ex8" class="cat-grid"></div>
+    </div>
+  </section>
+
+  <!-- ============ 5. ZELF BEWERKING EN UITKOMST NOTEREN ============ -->
+  <section class="group">
+    <h2>5. Noteer zelf de bewerking én de uitkomst</h2>
+    <div class="card" data-key="ex9">
+      <div class="card-head" style="justify-content:flex-end;"><button class="refresh-btn" data-target="ex9">↺ Opnieuw beginnen</button></div>
+      <p class="instructions">Noteer je antwoord als één bewerking mét uitkomst, zonder spaties. Bijvoorbeeld:
+        <strong>21:3=7</strong>. Schrijf × (keer) zoals een punt: <strong>.</strong> (bv. <strong>6.28=168</strong>).
+        Je mag : ook noteren als <strong>/</strong>. Feedback verschijnt pas nadat je je volledige antwoord hebt
+        ingetikt (klik ernaast of druk op Enter).</p>
+      <div id="content-ex9"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ============================================================
+   OPSLAG-HELPERS
+   ============================================================ */
+const STORAGE_PREFIX = 'dossier2_oef_';
+function loadEx(key, fallback){
+  try{
+    const raw = localStorage.getItem(STORAGE_PREFIX + key);
+    if(raw){ const parsed = JSON.parse(raw); if(parsed && typeof parsed === 'object') return parsed; }
+  }catch(e){}
+  return fallback;
+}
+function saveEx(key, data){
+  try{ localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(data)); }catch(e){}
+}
+function clearEx(key){ try{ localStorage.removeItem(STORAGE_PREFIX + key); }catch(e){} }
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+const renderers = {};
+function refreshExercise(key){ clearEx(key); if(renderers[key]) renderers[key](); }
+document.addEventListener('click', (e)=>{
+  const btn = e.target.closest('.refresh-btn');
+  if(btn) refreshExercise(btn.dataset.target);
+});
+
+/* ============================================================
+   GENERIEKE DRAG + KLIK-INTERACTIE VOOR CHIPS -> ZONES
+   findZoneAt(x,y) geeft het dichtstbijzijnde zone-element terug (of null)
+   onDrop(zoneEl|null, chip) verwerkt het resultaat
+   ============================================================ */
+let currentSelectedChip = null;
+
+function makeChipDraggable(chip, findZoneAt, onDrop){
+  chip.addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    const startX = e.clientX, startY = e.clientY;
+    let moved = false;
+    const rect = chip.getBoundingClientRect();
+    const offX = e.clientX - rect.left, offY = e.clientY - rect.top;
+    const originalParent = chip.parentElement;
+    try{ chip.setPointerCapture(e.pointerId); }catch(err){}
+
+    function onMove(e2){
+      const dx = e2.clientX-startX, dy = e2.clientY-startY;
+      if(!moved && Math.hypot(dx,dy) > 4){
+        moved = true;
+        chip.style.position = 'fixed';
+        chip.style.left = rect.left + 'px';
+        chip.style.top = rect.top + 'px';
+        chip.style.zIndex = 999;
+        chip.style.pointerEvents = 'none';
+        document.body.appendChild(chip);
+      }
+      if(moved){
+        chip.style.left = (e2.clientX-offX) + 'px';
+        chip.style.top = (e2.clientY-offY) + 'px';
+      }
+    }
+    function onUp(e2){
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      chip.style.pointerEvents = '';
+      chip.style.position = ''; chip.style.left = ''; chip.style.top = ''; chip.style.zIndex = '';
+      if(moved){
+        const zone = findZoneAt(e2.clientX, e2.clientY);
+        onDrop(zone, chip);
+      } else {
+        document.querySelectorAll('.chip-selected').forEach(c=>c.classList.remove('chip-selected'));
+        if(currentSelectedChip === chip){ currentSelectedChip = null; }
+        else { currentSelectedChip = chip; chip.classList.add('chip-selected'); }
+      }
+    }
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+  });
+}
+function zoneClickHandler(zoneEl, onDrop){
+  zoneEl.addEventListener('click', (e)=>{
+    if(currentSelectedChip){
+      onDrop(zoneEl, currentSelectedChip);
+      currentSelectedChip.classList.remove('chip-selected');
+      currentSelectedChip = null;
+    }
+  });
+}
+function rectContains(el, x, y){
+  const r = el.getBoundingClientRect();
+  return x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
+}
+
+/* ============================================================
+   SECTIE 1 — BEGRIPPEN (2.1, 2.2, 2.3)
+   ============================================================ */
+function genTermBlanks(op, a, b, c){
+  if(op === '+') return [
+    {word:'termen', text:a+' en '+b+' zijn de', id:'t1'},
+    {word:'som', text:c+' is de', id:'t2'}
+  ];
+  if(op === '-') return [
+    {word:'aftrektal', text:a+' is het', id:'t1'},
+    {word:'aftrekker', text:b+' is de', id:'t2'},
+    {word:'verschil', text:c+' is het', id:'t3'}
+  ];
+  if(op === '×') return [
+    {word:'factoren', text:a+' en '+b+' zijn de', id:'t1'},
+    {word:'product', text:c+' is het', id:'t2'}
+  ];
+  return [
+    {word:'deeltal', text:a+' is het', id:'t1'},
+    {word:'deler', text:b+' is de', id:'t2'},
+    {word:'quotiënt', text:c+' is het', id:'t3'}
+  ];
+}
+// elke oefening heeft een eigen vaste volgorde van berekeningen (operatorOrder)
+// én een eigen vaste manier om de invullijnen binnen elke berekening te herschikken (blanksTransform),
+// zodat de antwoordvolgorde niet bij elke oefening identiek is.
+function reverseArr(arr){ return arr.slice().reverse(); }
+function rotateArr(arr){ return arr.length>1 ? [...arr.slice(1), arr[0]] : arr.slice(); }
+function identityArr(arr){ return arr.slice(); }
+
+const TERMS_DATA = {
+  ex1: {
+    blanksTransform: identityArr,
+    problems: [
+      {op:'+',a:34,b:6,c:40}, {op:'-',a:50,b:18,c:32}, {op:'×',a:7,b:8,c:56}, {op:':',a:63,b:9,c:7}
+    ]
+  },
+  ex2: {
+    blanksTransform: reverseArr,
+    problems: [
+      {op:'×',a:6,b:9,c:54}, {op:':',a:72,b:8,c:9}, {op:'+',a:27,b:15,c:42}, {op:'-',a:80,b:24,c:56}
+    ]
+  },
+  ex3: {
+    blanksTransform: rotateArr,
+    problems: [
+      {op:'-',a:95,b:37,c:58}, {op:'+',a:58,b:19,c:77}, {op:':',a:84,b:7,c:12}, {op:'×',a:5,b:12,c:60}
+    ]
+  }
+};
+
+function makeTermsExercise(key){
+  const def = TERMS_DATA[key];
+  const problems = def.problems;
+  const poolEl = document.getElementById('pool-'+key);
+  const probEl = document.getElementById('problems-'+key);
+  poolEl.innerHTML = ''; probEl.innerHTML = '';
+
+  // bouw volledige lijst blanks met een stabiele blankId (los van weergavevolgorde),
+  // zodat opgeslagen voortgang correct blijft ook al staat alles in een andere volgorde.
+  const allBlanks = [];
+  problems.forEach((p)=>{
+    const problemId = p.op + p.a + '_' + p.b;
+    p._problemId = problemId;
+    const blanks = genTermBlanks(p.op, p.a, p.b, p.c);
+    blanks.forEach(bl=>{ bl.blankId = problemId + '_' + bl.id; bl.problemId = problemId; });
+    p._blanks = def.blanksTransform(blanks);
+    allBlanks.push(...blanks);
+  });
+
+  const exprSymbols = {'+':'+', '-':'-', '×':'×', ':':':'};
+  problems.forEach((p)=>{
+    const wrap = document.createElement('div');
+    wrap.className = 'term-problem';
+    wrap.innerHTML = `<div class="term-expr">${p.a} ${exprSymbols[p.op]} ${p.b} = ${p.c}</div>`;
+    p._blanks.forEach(bl=>{
+      const line = document.createElement('div');
+      line.className = 'term-line';
+      line.innerHTML = `<span>${bl.text}</span><span class="blank-zone" data-blank="${bl.blankId}"></span>`;
+      wrap.appendChild(line);
+    });
+    const fb = document.createElement('div');
+    fb.className = 'term-feedback';
+    fb.id = 'fb-'+key+'-'+p._problemId;
+    wrap.appendChild(fb);
+    probEl.appendChild(wrap);
+  });
+
+  const state = loadEx(key, {}); // {blankId: word}
+  function findZoneAt(x,y){
+    let found = null;
+    probEl.querySelectorAll('.blank-zone').forEach(z=>{ if(rectContains(z,x,y)) found = z; });
+    return found;
+  }
+  function setFeedback(problemId, text, ok){
+    const fb = document.getElementById('fb-'+key+'-'+problemId);
+    fb.textContent = text;
+    fb.className = 'term-feedback ' + (ok ? 'ok' : 'bad');
+  }
+  function unplace(chip){
+    const prevZone = chip.parentElement;
+    if(prevZone && prevZone.classList.contains('blank-zone')){
+      delete state[prevZone.dataset.blank];
+    }
+    chip.classList.remove('chip-correct','chip-wrong');
+    poolEl.appendChild(chip);
+    saveEx(key, state);
+  }
+  function place(zoneEl, chip, opts){
+    opts = opts || {};
+    const blankId = zoneEl.dataset.blank;
+    const blankDef = allBlanks.find(b=>b.blankId === blankId);
+    // als de zone al bezet is, zet dat woord terug in de pool
+    if(zoneEl.firstElementChild){ unplace(zoneEl.firstElementChild); }
+    // als dit chip al ergens anders stond, maak die plek vrij (zonder te tekenen)
+    const prevZone = chip.parentElement;
+    if(prevZone && prevZone.classList.contains('blank-zone')){ delete state[prevZone.dataset.blank]; }
+    zoneEl.appendChild(chip);
+    const correct = chip.dataset.word === blankDef.word;
+    chip.classList.remove('chip-correct','chip-wrong');
+    chip.classList.add(correct ? 'chip-correct' : 'chip-wrong');
+    if(!opts.silent){
+      setFeedback(blankDef.problemId,
+        correct ? '✅ Juist! "'+chip.dataset.word+'" hoort hier.' : '❌ Niet juist. "'+chip.dataset.word+'" hoort hier niet.',
+        correct);
+    }
+    state[blankId] = chip.dataset.word;
+    saveEx(key, state);
+  }
+  function onDrop(zone, chip){
+    if(zone && zone.classList.contains('blank-zone')) place(zone, chip);
+    else unplace(chip);
+  }
+
+  const words = shuffle(allBlanks.map(b=>b.word));
+  const chipsByWord = {};
+  words.forEach((w, i)=>{
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.textContent = w;
+    chip.dataset.word = w;
+    chip.dataset.chipId = 'c'+i;
+    makeChipDraggable(chip, findZoneAt, onDrop);
+    chipsByWord[w] = chip;
+    poolEl.appendChild(chip);
+  });
+  probEl.querySelectorAll('.blank-zone').forEach(z=> zoneClickHandler(z, onDrop));
+
+  // herstel opgeslagen status
+  Object.keys(state).forEach(blankId=>{
+    const word = state[blankId];
+    const chip = chipsByWord[word];
+    const zoneEl = probEl.querySelector(`.blank-zone[data-blank="${blankId}"]`);
+    if(chip && zoneEl) place(zoneEl, chip, {silent:true});
+  });
+}
+['ex1','ex2','ex3'].forEach(key=>{ renderers[key] = ()=>makeTermsExercise(key); renderers[key](); });
+
+/* ============================================================
+   SECTIE 2 — TABELLEN (2.4)
+   ============================================================ */
+const TABLE_DATA = {
+  ex4: [
+    {D:{given:true,value:24}, d:{given:true,value:4}, q:{given:false,value:6}, r:{given:false,value:0}},
+    {D:{given:true,value:31}, d:{given:true,value:5}, q:{given:false,value:6}, r:{given:false,value:1}},
+    {D:{given:false,value:42}, d:{given:true,value:6}, q:{given:true,value:7}, r:{given:true,value:0}},
+    {D:{given:false,value:77}, d:{given:true,value:8}, q:{given:true,value:9}, r:{given:true,value:5}}
+  ],
+  ex5: [
+    {D:{given:true,value:45}, d:{given:true,value:9}, q:{given:false,value:5}, r:{given:false,value:0}},
+    {D:{given:true,value:52}, d:{given:true,value:7}, q:{given:false,value:7}, r:{given:false,value:3}},
+    {D:{given:false,value:54}, d:{given:true,value:9}, q:{given:true,value:6}, r:{given:true,value:0}},
+    {D:{given:false,value:51}, d:{given:true,value:6}, q:{given:true,value:8}, r:{given:true,value:3}}
+  ],
+  ex6: [
+    {D:{given:true,value:64}, d:{given:true,value:8}, q:{given:false,value:8}, r:{given:false,value:0}},
+    {D:{given:true,value:95}, d:{given:true,value:10}, q:{given:false,value:9}, r:{given:false,value:5}},
+    {D:{given:false,value:56}, d:{given:true,value:7}, q:{given:true,value:8}, r:{given:true,value:0}},
+    {D:{given:false,value:69}, d:{given:true,value:9}, q:{given:true,value:7}, r:{given:true,value:6}}
+  ]
+};
+
+function makeTableExercise(key){
+  const rows = TABLE_DATA[key];
+  const container = document.getElementById('content-'+key);
+  const cols = ['D','d','q','r'];
+  let html = '<table class="dtable"><caption>Vul de ontbrekende waarden in (D = deeltal, d = deler, q = quotiënt, r = rest).</caption><thead><tr><th>D</th><th>d</th><th>q</th><th>r</th></tr></thead><tbody>';
+  rows.forEach((row, ri)=>{
+    html += '<tr>';
+    cols.forEach(c=>{
+      const cell = row[c];
+      if(cell.given){
+        html += `<td class="given">${cell.value}</td>`;
+      } else {
+        html += `<td><input type="text" inputmode="numeric" class="dtable-input" data-row="${ri}" data-col="${c}" autocomplete="off"></td>`;
+      }
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+
+  html += rows.map((row, ri)=>`
+    <div class="oq-row" data-row="${ri}">
+      <div class="oq-label">Rij ${ri+1}: is dit een opgaande of een niet-opgaande deling?</div>
+      <div class="oq-buttons">
+        <button type="button" class="oq-btn" data-val="opgaand">Opgaande deling</button>
+        <button type="button" class="oq-btn" data-val="niet_opgaand">Niet-opgaande deling</button>
+      </div>
+      <div class="oq-fb"></div>
+    </div>`).join('');
+
+  container.innerHTML = html;
+
+  const state = loadEx(key, {}); // {"ri_c": value} en {"oq_ri": antwoord}
+  const inputs = container.querySelectorAll('.dtable-input');
+  inputs.forEach(inp=>{
+    const ri = inp.dataset.row, c = inp.dataset.col;
+    const stateKey = ri+'_'+c;
+    if(state[stateKey] != null) inp.value = state[stateKey];
+    function check(){
+      const val = inp.value.trim();
+      state[stateKey] = val;
+      saveEx(key, state);
+      if(val === ''){ inp.classList.remove('correct','wrong'); return; }
+      const correct = Number(val) === rows[ri][c].value;
+      inp.classList.toggle('correct', correct);
+      inp.classList.toggle('wrong', !correct);
+    }
+    inp.addEventListener('input', check);
+    if(inp.value) check();
+  });
+
+  container.querySelectorAll('.oq-row').forEach(oqRow=>{
+    const ri = Number(oqRow.dataset.row);
+    const isOpgaand = rows[ri].r.value === 0;
+    const stateKey = 'oq_'+ri;
+    function applyAnswer(val, doSave){
+      oqRow.querySelectorAll('.oq-btn').forEach(b=>b.classList.remove('chosen'));
+      const btn = oqRow.querySelector(`.oq-btn[data-val="${val}"]`);
+      if(btn) btn.classList.add('chosen');
+      const correct = (val === 'opgaand') === isOpgaand;
+      const fb = oqRow.querySelector('.oq-fb');
+      const reason = isOpgaand
+        ? `Opgaande deling, want de rest is 0 (${rows[ri].D.value} = ${rows[ri].d.value} × ${rows[ri].q.value} + 0).`
+        : `Niet-opgaande deling, want de rest is ${rows[ri].r.value} en dat is niet 0.`;
+      fb.textContent = (correct ? '✅ Juist! ' : '❌ Niet juist. ') + reason;
+      fb.className = 'oq-fb ' + (correct ? 'ok' : 'bad');
+      if(doSave){ state[stateKey] = val; saveEx(key, state); }
+    }
+    oqRow.querySelectorAll('.oq-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=> applyAnswer(btn.dataset.val, true));
+    });
+    if(state[stateKey]) applyAnswer(state[stateKey], false);
+  });
+}
+['ex4','ex5','ex6'].forEach(key=>{ renderers[key] = ()=>makeTableExercise(key); renderers[key](); });
+
+/* ============================================================
+   SECTIE 3 — VRAAGSTUKJES (2.5 - 2.6), numeriek antwoord
+   ============================================================ */
+const WORD_PROBLEMS = [
+  {text:'Nora las dit weekend 138 bladzijden van haar boek. Vandaag las ze er nog 27 bij. Hoeveel bladzijden heeft ze in totaal gelezen?', a:138, op:'+', b:27, answer:165},
+  {text:'Emma had 96 euro gespaard. Ze kocht een fiets-accessoire van 27 euro. Hoeveel geld heeft ze nog over?', a:96, op:'-', b:27, answer:69},
+  {text:'Een klas van 24 leerlingen brengt elk 3 euro mee voor een schooluitstap. Hoeveel euro is dat in totaal?', a:24, op:'×', b:3, answer:72},
+  {text:'Juf Sarah verdeelt 84 kleurpotloden eerlijk over 6 tafelgroepjes. Hoeveel potloden krijgt elk tafelgroepje?', a:84, op:':', b:6, answer:14}
+];
+
+function makeWordProblemsExercise(key){
+  const container = document.getElementById('content-'+key);
+  container.innerHTML = WORD_PROBLEMS.map((p,i)=>`
+    <div class="word-problem" data-idx="${i}">
+      <div class="wp-text">${i+1}. ${p.text}</div>
+      <div class="wp-row">
+        <input type="text" inputmode="numeric" class="wp-input" autocomplete="off" placeholder="antwoord">
+        <span class="wp-fb"></span>
+      </div>
+    </div>`).join('');
+
+  const state = loadEx(key, {});
+  container.querySelectorAll('.word-problem').forEach(row=>{
+    const idx = Number(row.dataset.idx);
+    const p = WORD_PROBLEMS[idx];
+    const input = row.querySelector('.wp-input');
+    const fb = row.querySelector('.wp-fb');
+    if(state[idx] != null) input.value = state[idx];
+    function check(){
+      state[idx] = input.value;
+      saveEx(key, state);
+      const val = input.value.trim().replace(',', '.');
+      if(val === ''){ fb.textContent = ''; fb.className = 'wp-fb'; return; }
+      const correct = Number(val) === p.answer;
+      fb.textContent = (correct ? '✅ Juist! ' : '❌ Nog niet juist. De bewerking is: ') + p.a+' '+p.op+' '+p.b+' = '+p.answer;
+      fb.className = 'wp-fb ' + (correct ? 'ok' : 'bad');
+    }
+    input.addEventListener('input', check);
+    if(input.value) check();
+  });
+}
+renderers['ex7'] = ()=>makeWordProblemsExercise('ex7');
+renderers['ex7']();
+
+/* ============================================================
+   SECTIE 4 — SLEEP NAAR BEWERKING (2.8)
+   ============================================================ */
+const CATEGORIES = [
+  {id:'optelling', label:'Optelling (+)'},
+  {id:'aftrekking', label:'Aftrekking (−)'},
+  {id:'vermenigvuldiging', label:'Vermenigvuldiging (×)'},
+  {id:'deling', label:'Deling (:)'}
+];
+const CAT_ITEMS = [
+  {id:'i1', text:'Je verzamelt zegeltjes van twee weken en telt ze samen.', cat:'optelling'},
+  {id:'i2', text:'Je hebt twee spaarpotten en telt het geld samen om te weten hoeveel je totaal hebt.', cat:'optelling'},
+  {id:'i3', text:'Een school ontvangt twee dozen met knikkers en telt het totaal aantal.', cat:'optelling'},
+  {id:'i4', text:'Er zaten 210 appels in een krat. Er worden er 45 verkocht. Hoeveel appels blijven er over?', cat:'aftrekking'},
+  {id:'i5', text:'Het verschil in aantal volgers tussen twee YouTube-kanalen berekenen.', cat:'aftrekking'},
+  {id:'i6', text:'Een team had 88 punten en verliest er 19 in de laatste ronde.', cat:'aftrekking'},
+  {id:'i7', text:'5 dozen met elk 12 flesjes water: hoeveel flesjes zijn er in totaal?', cat:'vermenigvuldiging'},
+  {id:'i8', text:'Een bakker maakt elke dag 6 taarten, 7 dagen na elkaar.', cat:'vermenigvuldiging'},
+  {id:'i9', text:'36 koekjes eerlijk verdelen over 4 vriendinnen.', cat:'deling'},
+  {id:'i10', text:'Een lint van 96 cm wordt geknipt in stukken van 8 cm: hoeveel stukken zijn er?', cat:'deling'}
+];
+
+function makeCategoryExercise(key){
+  const poolEl = document.getElementById('pool-'+key);
+  const catsEl = document.getElementById('cats-'+key);
+  poolEl.innerHTML = '';
+  catsEl.innerHTML = CATEGORIES.map(c=>`
+    <div class="cat-zone" data-cat="${c.id}">
+      <h4>${c.label}</h4>
+      <div class="cat-items"></div>
+    </div>`).join('');
+
+  const state = loadEx(key, {}); // {itemId: catId}
+  function findZoneAt(x,y){
+    let found = null;
+    catsEl.querySelectorAll('.cat-zone').forEach(z=>{ if(rectContains(z,x,y)) found = z; });
+    return found;
+  }
+  function unplace(chip){
+    poolEl.appendChild(chip);
+    chip.classList.remove('chip-correct','chip-wrong');
+    delete state[chip.dataset.itemId];
+    saveEx(key, state);
+  }
+  function place(zoneEl, chip, opts){
+    opts = opts || {};
+    const catId = zoneEl.dataset.cat;
+    const itemDef = CAT_ITEMS.find(it=>it.id === chip.dataset.itemId);
+    zoneEl.querySelector('.cat-items').appendChild(chip);
+    const correct = itemDef.cat === catId;
+    chip.classList.remove('chip-correct','chip-wrong');
+    chip.classList.add(correct ? 'chip-correct' : 'chip-wrong');
+    state[chip.dataset.itemId] = catId;
+    saveEx(key, state);
+  }
+  function onDrop(zone, chip){
+    if(zone && zone.classList.contains('cat-zone')) place(zone, chip);
+    else unplace(chip);
+  }
+  catsEl.querySelectorAll('.cat-zone').forEach(z=> zoneClickHandler(z, onDrop));
+
+  const chipsById = {};
+  shuffle(CAT_ITEMS).forEach(it=>{
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.textContent = it.text;
+    chip.dataset.itemId = it.id;
+    makeChipDraggable(chip, findZoneAt, onDrop);
+    chipsById[it.id] = chip;
+    poolEl.appendChild(chip);
+  });
+
+  Object.keys(state).forEach(itemId=>{
+    const chip = chipsById[itemId];
+    const zoneEl = catsEl.querySelector(`.cat-zone[data-cat="${state[itemId]}"]`);
+    if(chip && zoneEl) place(zoneEl, chip, {silent:true});
+  });
+}
+renderers['ex8'] = ()=>makeCategoryExercise('ex8');
+renderers['ex8']();
+
+/* ============================================================
+   SECTIE 5 — ZELF BEWERKING EN UITKOMST NOTEREN
+   Feedback pas na volledige invoer (blur / Enter), niet live
+   ============================================================ */
+const OPEN_PROBLEMS = [
+  {text:'Nisa verdeelt haar snoepzak eerlijk tussen haarzelf en haar 2 vriendinnen. Ze had 21 snoepjes. Hoeveel snoepjes krijgt ieder?', answer:'21:3=7'},
+  {text:'Op een schoolreis zijn er 6 bussen met elk 28 leerlingen. Hoeveel leerlingen gaan er in totaal mee?', answer:'6.28=168'},
+  {text:'Liam spaarde 156 euro voor een nieuwe fiets. Voor zijn verjaardag kreeg hij er nog 45 euro bij. Hoeveel euro heeft hij nu?', answer:'156+45=201'},
+  {text:'Een bioscoopzaal heeft 180 plaatsen. Er zijn al 127 tickets verkocht. Hoeveel plaatsen zijn er nog vrij?', answer:'180-127=53'}
+];
+
+function normalizeOpenAnswer(v){
+  return v.trim().toLowerCase()
+    .replace(/\s+/g, '')
+    .replace(/[x*×.]/g, '.')
+    .replace(/[:/÷]/g, ':');
+}
+function makeOpenExercise(key){
+  const container = document.getElementById('content-'+key);
+  container.innerHTML = OPEN_PROBLEMS.map((p,i)=>`
+    <div class="word-problem" data-idx="${i}">
+      <div class="wp-text">${i+1}. ${p.text}</div>
+      <div class="wp-row">
+        <input type="text" class="open-input" autocomplete="off" placeholder="antwoord">
+        <span class="wp-fb"></span>
+      </div>
+    </div>`).join('');
+
+  const state = loadEx(key, {});
+  container.querySelectorAll('.word-problem').forEach(row=>{
+    const idx = Number(row.dataset.idx);
+    const p = OPEN_PROBLEMS[idx];
+    const input = row.querySelector('.open-input');
+    const fb = row.querySelector('.wp-fb');
+    if(state[idx] != null) input.value = state[idx];
+
+    function check(){
+      state[idx] = input.value;
+      saveEx(key, state);
+      const val = input.value.trim();
+      if(val === ''){ fb.textContent = ''; fb.className = 'wp-fb'; return; }
+      const correct = normalizeOpenAnswer(val) === normalizeOpenAnswer(p.answer);
+      fb.textContent = correct ? '✅ Juist!' : ('❌ Nog niet juist. Een mogelijke oplossing is: ' + p.answer);
+      fb.className = 'wp-fb ' + (correct ? 'ok' : 'bad');
+    }
+    // enkel checken bij verlaten van het veld of Enter, niet bij elke toets
+    input.addEventListener('blur', check);
+    input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ check(); input.blur(); } });
+    // enkel opslaan tijdens typen, zonder feedback te tonen
+    input.addEventListener('input', ()=>{ state[idx] = input.value; saveEx(key, state); });
+    if(input.value) check();
+  });
+}
+renderers['ex9'] = ()=>makeOpenExercise('ex9');
+renderers['ex9']();
+</script>
+</body>
+</html>
